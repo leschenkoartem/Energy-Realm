@@ -28,21 +28,21 @@ class MainViewModel: ObservableObject {
     @Published var mlVolume = ""
     @Published var mgCoffeinPer100 = ""
     
-    @Published var datalist = [StoryModel]()
+    @Published var datalist = [StoryObject]()
     
     @Published var showAlert = false
     @Published var textAlert = "" { didSet { showAlert = true } }
     
     func updateData() {
-        datalist = CoreDataStory.shared.getAllElements()
+        datalist = RealmManager.shared.getAllObjectsFromRealm()
     }
     
-    func deleteItems(with items: [StoryModel]) {
+    func deleteItems(with items: [StoryObject]) {
             for item in items {
                 if let index = datalist.firstIndex(where: { $0.id == item.id }) {
                     // Викликаємо функцію для видалення з бази даних
-                    CoreDataStory.shared.removeEllement(point: datalist[index])
-                    datalist.remove(at: index)
+                    RealmManager.shared.deleteObjectFromRealm(storyObject: datalist[index])
+                    updateData()
                 }
             }
         }
@@ -56,16 +56,21 @@ class MainViewModel: ObservableObject {
     func saveDrink() {
         if pickedView == .already {
             guard let picked = pickedDrink else { textAlert = "Something went wrong."; return }
-            CoreDataStory.shared.saveElement(coffein: picked.mgCofein,
-                                             imageName: picked.imageName,
-                                             name: pickedCompany,
-                                             taste: picked.taste,
-                                             volume: pickedVolume ?? 500)
             
+            RealmManager.shared.addObjectToRealm(coffein: picked.mgCofein,
+                                                 imageName: picked.imageName,
+                                                 name: pickedCompany,
+                                                 taste: picked.taste,
+                                                 volume: pickedVolume ?? 500)
         } else {
             guard let cofeinInt = Int(mgCoffeinPer100) else { textAlert = "Incorrect amount of caffeine"; return }
             guard let mlVolumeInt = Int(mlVolume) else { textAlert = "Incorrect amount of drink"; return }
-            CoreDataStory.shared.saveElement(coffein: cofeinInt, imageName: "Placeholder", name: companyName, taste: taste, volume: mlVolumeInt)
+            print("ergntiuovngeitoug" + " \(mlVolumeInt)")
+            RealmManager.shared.addObjectToRealm(coffein: cofeinInt,
+                                                 imageName: "Placeholder",
+                                                 name: companyName,
+                                                 taste: taste,
+                                                 volume: mlVolumeInt)
             
             withAnimation {
                 companyName = ""

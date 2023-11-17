@@ -16,13 +16,13 @@ struct ContentView: View {
             VStack {
                 List {
                     Spacer().frame(height: 130)
-                    ForEach(vm.datalist, id: \.id) { item in
+                    ForEach(vm.datalist, id: \.time) { item in
                         HStack {
                             VStack(alignment: .leading) {
-                                Text(item.name ?? "")
+                                Text(item.name)
                                     .font(.title2)
                                     .fontWeight(.medium)
-                                Text(item.taste ?? "")
+                                Text(item.taste)
                             }
                             Spacer()
                             VStack {
@@ -33,13 +33,16 @@ struct ContentView: View {
                                 
                                 Text(vm.formatVolumeString(Double(item.volume) / 1000.0))
                             }
-                            Image(item.imageName ?? "Placeholder")
+                            Image(item.imageName)
                                 .resizable()
                                 .aspectRatio(contentMode: .fit)
                                 .frame(height: 60)
                                 .shadow( color: .white, radius: 1)
                                 .frame(width: 50)
                         }.frame(maxWidth: .infinity)
+                            .onAppear {
+                                print(item)
+                            }
                             .padding()
                         .background(Color(.systemGray4))
                         .cornerRadius(12)
@@ -47,9 +50,10 @@ struct ContentView: View {
                     }
                     .onDelete { indexSet in
                         let itemsToDelete = indexSet.map { vm.datalist[$0] }
-                        vm.deleteItems(with: itemsToDelete)
+                        withAnimation {
+                            vm.deleteItems(with: itemsToDelete)
+                        }
                     }
-                    
                 }
                 .listStyle(.plain)
             }
@@ -79,10 +83,6 @@ struct ContentView: View {
                 Spacer()
                 
             }.offset(y: -20)
-        }.sheet(isPresented: .constant(true)) {
-                ModalView()
-                    .interactiveDismissDisabled()
-                    .presentationDetents([.fraction(0.2), .fraction(0.35)], largestUndimmed: .medium)
         }
         .onAppear {
             vm.updateData()
@@ -118,13 +118,13 @@ struct ModalView: View {
                         HStack {
                             CustomTextField(text: $vm.companyName, placeholder: "Name")
                             
-                            CustomTextField(text: $vm.mgCoffeinPer100, placeholder: "Milliliters", numberPad: true)
+                            CustomTextField(text: $vm.mlVolume, placeholder: "Milliliters", numberPad: true)
                                 .frame(width: 100)
                         }
                         HStack {
                             CustomTextField(text: $vm.taste, placeholder: "Taste or subname")
                             
-                            CustomTextField(text: $vm.mlVolume, placeholder: "Mg/100ml", numberPad: true)
+                            CustomTextField(text: $vm.mgCoffeinPer100, placeholder: "Mg/100ml", numberPad: true)
                                 .frame(width: 100)
                         }
                         
